@@ -129,7 +129,7 @@ export default async function PlayerStatsPage({
           {Object.entries(chartConfig).map(([key, config]) => (
             <StatsChartServerNfl
               key={key}
-              title={config.label as string}
+              title={typeof config.label === "string" ? config.label : ""}
               data={stats.map((stat) => ({
                 ...stat,
                 game: stat.week, // Use 'week' for NFL
@@ -139,7 +139,7 @@ export default async function PlayerStatsPage({
               dataKey={key}
               config={config as ChartConfig}
             />
-          ))}{" "}
+          ))}
         </div>
       </div>
     </div>
