@@ -13,7 +13,7 @@ interface Stat {
   game: number;
   opponent: string;
   venue: string;
-  [key: string]: any;
+  [key: string]: string | number; // Allowing only string or number for dynamic properties
 }
 
 interface StatsChartServerNbaProps {
@@ -50,10 +50,10 @@ const StatsChartServerNba: React.FC<StatsChartServerNbaProps> = ({
           <StatsChartClientNba
             data={data.map((stat) => ({
               ...stat,
-              time: Number(stat.game), // Use 'game' for NBA as time
+              time: stat.game, // Use 'game' for NBA as time
               opponent: stat.opponent,
               venue: stat.venue,
-              game: Number(stat.game),
+              game: stat.game, // Ensure `game` is a number
             }))}
             dataKey={dataKey}
             color={chartSettings.color || "hotpink"} // Default color if not provided

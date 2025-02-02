@@ -39,6 +39,12 @@ const chartConfigsByPosition: Record<string, ChartConfig> = {
   // Add other positions if needed
 };
 
+interface PlayerDataNfl {
+  player_name: string;
+  position: string;
+  image_url: string;
+}
+
 export default async function PlayerStatsPage({
   params,
 }: {
@@ -46,7 +52,7 @@ export default async function PlayerStatsPage({
 }) {
   const { slug } = params;
 
-  // Step 1: Fetch the game stats for the given player based on the slug (assuming slug is used to identify the player)
+  // Step 1: Fetch the game stats for the given player based on the slug
   const { data: stats, error: statsError } = await supabase
     .from("game_stats")
     .select(
@@ -90,6 +96,14 @@ export default async function PlayerStatsPage({
     );
   }
 
+  if (!playerDataNfl) {
+    return (
+      <div className="text-center text-red-500 mt-10">
+        <p>Player data not found.</p>
+      </div>
+    );
+  }
+
   const playerName = playerDataNfl?.player_name || "Unknown Player";
   const position = playerDataNfl?.position || "Unknown";
   const playerImageUrl = playerDataNfl?.image_url || "";
@@ -116,9 +130,14 @@ export default async function PlayerStatsPage({
             <StatsChartServerNfl
               key={key}
               title={config.label as string}
-              data={stats.map((stat) => ({ ...stat, game: stat.week }))} // Use 'week' for NFL
+              data={stats.map((stat) => ({
+                ...stat,
+                game: stat.week, // Use 'week' for NFL
+                opponent: stat.opponent || "", // Ensure opponent exists
+                venue: stat.venue || "", // Ensure venue exists
+              }))}
               dataKey={key}
-              config={chartConfig}
+              config={config as ChartConfig}
             />
           ))}{" "}
         </div>

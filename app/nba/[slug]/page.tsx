@@ -1,3 +1,4 @@
+import React from "react";
 import StatsChartServerNba from "@/app/components/StatsChartServerNba"; // Updated import for NBA
 import { ChartConfig } from "@/app/components/ui/chart";
 import { createClient } from "@supabase/supabase-js";
@@ -13,24 +14,28 @@ const chartConfigsByPosition: Record<string, ChartConfig> = {
   F: {
     minutes: { label: "Minutes Played", color: "limegreen" },
     fieldGoalAttempts: { label: "Field Goal Attempts", color: "limegreen" },
-    fieldGoalsMade: { label: "Receiving Yards", color: "limegreen" },
+    fieldGoalsMade: { label: "Field Goals Made", color: "limegreen" }, // Fixed label
     receivingtouchdowns: { label: "Receiving Touchdowns", color: "limegreen" },
     longestreception: { label: "Longest Reception", color: "limegreen" },
   },
   // Add other positions (e.g., G for guards, C for centers, etc.)
 };
 
+interface PlayerStatsPageProps {
+  params: { slug: string };
+}
+
 export default async function PlayerStatsPage({
   params,
-}: {
-  params: { slug: string };
-}) {
+}: PlayerStatsPageProps) {
   const { slug } = params;
 
   // Step 1: Fetch the game stats for the given player based on the slug
   const { data: stats, error: statsError } = await supabase
     .from("game_stats")
-    .select("game, player_id, minutes, fieldGoalAttempts, fieldGoalsMade, slug")
+    .select(
+      "game, player_id, minutes, fieldGoalAttempts, fieldGoalsMade, slug, opponent, venue"
+    )
     .eq("slug", slug)
     .order("game", { ascending: true });
 
@@ -69,6 +74,14 @@ export default async function PlayerStatsPage({
     );
   }
 
+  if (!playerDataNba) {
+    return (
+      <div className="text-center text-red-500 mt-10">
+        <p>Player data not found.</p>
+      </div>
+    );
+  }
+
   const playerName = playerDataNba?.player_name || "Unknown Player";
   const position = playerDataNba?.position || "Unknown";
   const playerImageUrl = playerDataNba?.image_url || "";
@@ -90,8 +103,8 @@ export default async function PlayerStatsPage({
               data={stats.map((stat) => ({
                 ...stat,
                 game: stat.game,
-                opponent: (stat as any).opponent || "",
-                venue: (stat as any).venue || "",
+                opponent: stat.opponent || "", // Handle missing opponent field
+                venue: stat.venue || "", // Handle missing venue field
               }))}
               dataKey={key}
               config={config as ChartConfig}

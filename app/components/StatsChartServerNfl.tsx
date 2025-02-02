@@ -13,7 +13,7 @@ interface Stat {
   week: number;
   opponent: string;
   venue: string;
-  [key: string]: any;
+  [key: string]: string | number; // Allowing only string or number for dynamic properties
 }
 
 interface StatsChartServerNflProps {
@@ -31,8 +31,12 @@ const StatsChartServerNfl: React.FC<StatsChartServerNflProps> = ({
 }) => {
   const chartSettings = config[dataKey];
   if (!chartSettings) {
-    console.error(`config does not contain settings for dataKey: ${dataKey}`);
-    return null;
+    console.error(`Config does not contain settings for dataKey: ${dataKey}`);
+    return (
+      <div className="text-center text-red-500 mt-6">
+        <p>Sorry, we couldn't load the chart data for {title}.</p>
+      </div>
+    );
   }
 
   return (
@@ -45,13 +49,13 @@ const StatsChartServerNfl: React.FC<StatsChartServerNflProps> = ({
           <StatsChartClientNfl
             data={data.map((stat) => ({
               ...stat,
-              time: Number(stat.week), // Use 'week' for NFL
+              time: stat.week, // Use 'week' for NFL as time
               opponent: stat.opponent,
               venue: stat.venue,
-              week: Number(stat.week),
+              week: stat.week, // Ensure `week` is a number
             }))}
             dataKey={dataKey}
-            color={chartSettings.color || ""}
+            color={chartSettings.color || "hotpink"} // Default color if not provided
             league="nfl"
           />
         </CardContent>
@@ -59,4 +63,5 @@ const StatsChartServerNfl: React.FC<StatsChartServerNflProps> = ({
     </div>
   );
 };
+
 export default StatsChartServerNfl;

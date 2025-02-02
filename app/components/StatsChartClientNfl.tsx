@@ -10,26 +10,31 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
+// Define a type for the data structure
+interface GameData {
+  week: number; // NFL
+  opponent: string;
+  venue: string;
+  [key: string]: string | number; // Allow other dynamic fields with specific types
+}
+
 interface StatsChartClientNflProps {
-  data: {
-    week: number; // NFL
-    opponent: string;
-    venue: string;
-    [key: string]: any;
-  }[];
+  data: GameData[];
   dataKey: string;
   color: string;
   league: "nfl" | "nba"; // Add league prop to handle conditional logic
 }
 
-const CustomTooltip = ({
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: { payload: GameData }[];
+  label?: string | number;
+}
+
+const CustomTooltip: React.FC<CustomTooltipProps> = ({
   active,
   payload,
   label,
-}: {
-  active?: boolean;
-  payload?: any[];
-  label?: string | number;
 }) => {
   if (active && payload && payload.length) {
     const { opponent, venue } = payload[0].payload;
@@ -49,7 +54,7 @@ const StatsChartClientNfl: React.FC<StatsChartClientNflProps> = ({
   data = [],
   dataKey,
   color,
-  league, // Access the league prop here
+  league,
 }) => {
   if (!data || data.length === 0) {
     return (

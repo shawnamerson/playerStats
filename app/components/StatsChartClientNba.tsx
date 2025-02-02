@@ -10,25 +10,30 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
+// Define a type for the NBA data structure
+interface GameData {
+  game: number; // NBA game
+  opponent: string;
+  venue: string;
+  [key: string]: string | number; // Allow other dynamic fields with specific types
+}
+
 interface StatsChartClientNbaProps {
-  data: {
-    game: number; // NBA game
-    opponent: string;
-    venue: string;
-    [key: string]: any;
-  }[];
+  data: GameData[];
   dataKey: string;
   color: string;
 }
 
-const CustomTooltip = ({
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: { payload: GameData }[];
+  label?: string | number;
+}
+
+const CustomTooltip: React.FC<CustomTooltipProps> = ({
   active,
   payload,
   label,
-}: {
-  active?: boolean;
-  payload?: any[];
-  label?: string | number;
 }) => {
   if (active && payload && payload.length) {
     const { opponent, venue } = payload[0].payload;
@@ -94,4 +99,5 @@ const StatsChartClientNba: React.FC<StatsChartClientNbaProps> = ({
     </ResponsiveContainer>
   );
 };
+
 export default StatsChartClientNba;

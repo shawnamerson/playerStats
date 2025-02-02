@@ -19,9 +19,16 @@ const slugify = (name: string) => {
     .replace(/^-+|-+$/g, "");
 };
 
+interface Player {
+  id: string;
+  player_name: string;
+  image_url: string;
+  league: string;
+}
+
 export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [players, setPlayers] = useState<any[]>([]);
+  const [players, setPlayers] = useState<Player[]>([]);
   const [selectedLeague, setSelectedLeague] = useState("nfl");
 
   // Fetch players from Supabase when the component mounts
@@ -68,6 +75,7 @@ export default function HomePage() {
                 ? "bg-pink-600"
                 : "bg-gray-800 hover:bg-gray-700"
             }`}
+            aria-pressed={selectedLeague === "nfl" ? "true" : "false"}
           >
             NFL
           </button>
@@ -78,6 +86,7 @@ export default function HomePage() {
                 ? "bg-pink-600"
                 : "bg-gray-800 hover:bg-gray-700"
             }`}
+            aria-pressed={selectedLeague === "nba" ? "true" : "false"}
           >
             NBA
           </button>
