@@ -53,39 +53,11 @@ export default async function PlayerStatsPage({
   const { slug } = params;
 
   // Step 1: Fetch the game stats for the given player based on the slug
-  const { data: stats, error: statsError } = await supabase
-    .from("game_stats")
-    .select(
-      "week, player_name, slug, opponent, passingattempts, passingcompletions, passingyards, passingtouchdowns, interceptions, longestpass, sacked, rushingattempts, rushingyards, rushingtouchdowns, longestrush, receivingtargets, receptions, receivingyards, receivingtouchdowns, longestreception, player_id, venue"
-    )
-    .eq("slug", slug)
-    .order("week", { ascending: true });
-
-  if (statsError) {
-    console.error("Error fetching stats:", statsError.message);
-    return (
-      <div className="text-center text-red-500 mt-10">
-        <p>Failed to load stats for {slug}. Please try again later.</p>
-      </div>
-    );
-  }
-
-  if (!stats || stats.length === 0) {
-    return (
-      <div className="text-center text-gray-500 mt-10">
-        <p>No stats available for {slug}.</p>
-      </div>
-    );
-  }
-
-  const playerId = stats[0]?.player_id; // Get player_id from the game_stats
-
-  // Step 2: Fetch the player details (position and image_url) from the players table using player_id
   const { data: playerDataNfl, error: playerError } = await supabase
     .from("players")
     .select("position, image_url, player_name")
-    .eq("id", playerId)
-    .single(); // We expect one player, so use .single() to return just one result
+    .eq("id", slug)
+    .single(); // We expect one player, so use .single()
 
   if (playerError) {
     console.error("Error fetching player data:", playerError.message);
@@ -104,9 +76,11 @@ export default async function PlayerStatsPage({
     );
   }
 
-  const playerName = playerDataNfl?.player_name || "Unknown Player";
-  const position = playerDataNfl?.position || "Unknown";
-  const playerImageUrl = playerDataNfl?.image_url || "";
+  // Type the fetched data as PlayerDataNfl
+  const playerName =
+    (playerDataNfl as PlayerDataNfl)?.player_name || "Unknown Player";
+  const position = (playerDataNfl as PlayerDataNfl)?.position || "Unknown";
+  const playerImageUrl = (playerDataNfl as PlayerDataNfl)?.image_url || "";
 
   // Determine the chart config based on position
   const chartConfig = chartConfigsByPosition[position.toUpperCase()] || {};
@@ -124,13 +98,14 @@ export default async function PlayerStatsPage({
       <div className="space-y-6">
         {/* Display PlayerCard at the top */}
         <PlayerCardNfl name={playerName} imageUrl={playerImageUrl} />
-
         <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-6">
           {Object.entries(chartConfig).map(([key, config]) => (
             <StatsChartServerNfl
               key={key}
               title={typeof config.label === "string" ? config.label : ""}
-              data={stats.map((stat) => ({
+              data={(
+                playerDataNfl as PlayerDataNfl & { stats: any[] }
+              ).stats.map((stat) => ({
                 ...stat,
                 game: stat.week, // Use 'week' for NFL
                 opponent: stat.opponent || "", // Ensure opponent exists
@@ -140,7 +115,7 @@ export default async function PlayerStatsPage({
               config={config as ChartConfig}
             />
           ))}
-        </div>
+        </div>{" "}
       </div>
     </div>
   );
