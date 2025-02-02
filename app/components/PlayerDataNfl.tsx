@@ -1,5 +1,6 @@
 import React from "react";
 import { PlayerDataNfl } from "@/app/types/PlayerData"; // Import the type
+import Image from "next/image";
 
 interface PlayerDataNflProps {
   playerDataNfl: PlayerDataNfl;
@@ -14,7 +15,7 @@ const PlayerDataNflComponent: React.FC<PlayerDataNflProps> = ({
     <div className="bg-black text-white p-6 rounded-lg shadow-lg">
       <div className="flex items-center mb-4">
         {/* Image with fallback */}
-        <img
+        <Image
           src={image_url || "/default-player-image.jpg"}
           alt={`${player_name}'s photo`}
           className="w-16 h-16 rounded-full object-cover mr-4"

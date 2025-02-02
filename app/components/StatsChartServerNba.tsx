@@ -35,7 +35,7 @@ const StatsChartServerNba: React.FC<StatsChartServerNbaProps> = ({
     console.error(`Config does not contain settings for dataKey: ${dataKey}`);
     return (
       <div className="text-center text-red-500 mt-6">
-        <p>Sorry, we couldn't load the chart data for {title}.</p>
+        <p>Sorry, we couldn&apos;t load the chart data for {title}.</p>
       </div>
     );
   }
