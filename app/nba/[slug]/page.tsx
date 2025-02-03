@@ -1,4 +1,3 @@
-import React from "react";
 import StatsChartServerNba from "@/app/components/StatsChartServerNba"; // Updated import for NBA
 import { ChartConfig } from "@/app/components/ui/chart";
 import { createClient } from "@supabase/supabase-js";
@@ -28,7 +27,7 @@ const chartConfigsByPosition: Record<string, ChartConfig> = {
   // Add other positions (e.g., G for guards, C for centers, etc.)
 };
 
-export default async function PlayerStatsPage({
+export default function PlayerStatsPage({
   params,
 }: {
   params: { slug: string };
