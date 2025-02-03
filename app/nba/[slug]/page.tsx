@@ -18,23 +18,28 @@ const chartConfigsByPosition: Record<string, ChartConfig> = {
     receivingtouchdowns: { label: "Receiving Touchdowns", color: "limegreen" },
     longestreception: { label: "Longest Reception", color: "limegreen" },
   },
+  PG: {
+    minutes: { label: "Minutes Played", color: "limegreen" },
+    fieldGoalAttempts: { label: "Field Goal Attempts", color: "limegreen" },
+    fieldGoalsMade: { label: "Field Goals Made", color: "limegreen" }, // Fixed label
+    receivingtouchdowns: { label: "Receiving Touchdowns", color: "limegreen" },
+    longestreception: { label: "Longest Reception", color: "limegreen" },
+  },
   // Add other positions (e.g., G for guards, C for centers, etc.)
 };
 
-interface PlayerStatsPageProps {
-  params: { slug: string };
-}
-
 export default async function PlayerStatsPage({
   params,
-}: PlayerStatsPageProps) {
+}: {
+  params: { slug: string };
+}) {
   const { slug } = params;
 
-  // Step 1: Fetch the game stats for the given player based on the slug
+  // Step 1: Fetch the game stats for the given player based on the slug (assuming slug is used to identify the player)
   const { data: stats, error: statsError } = await supabase
     .from("game_stats")
     .select(
-      "game, player_id, minutes, fieldGoalAttempts, fieldGoalsMade, slug, opponent, venue"
+      "game, player_name, slug, opponent, minutes, fieldGoalAttempts, player_id, venue"
     )
     .eq("slug", slug)
     .order("game", { ascending: true });
@@ -61,7 +66,7 @@ export default async function PlayerStatsPage({
   // Step 2: Fetch the player details (position, image_url, and league)
   const { data: playerDataNba, error: playerError } = await supabase
     .from("players")
-    .select("position, image_url, player_name, league")
+    .select("position, image_url, player_name")
     .eq("id", playerId)
     .single(); // We expect one player, so use .single() to return just one result
 
@@ -74,14 +79,6 @@ export default async function PlayerStatsPage({
     );
   }
 
-  if (!playerDataNba) {
-    return (
-      <div className="text-center text-red-500 mt-10">
-        <p>Player data not found.</p>
-      </div>
-    );
-  }
-
   const playerName = playerDataNba?.player_name || "Unknown Player";
   const position = playerDataNba?.position || "Unknown";
   const playerImageUrl = playerDataNba?.image_url || "";
@@ -89,27 +86,37 @@ export default async function PlayerStatsPage({
   // Determine the chart config based on position
   const chartConfig = chartConfigsByPosition[position.toUpperCase()] || {};
 
+  console.log("Player position:", position);
+  console.log("Available chart configs:", Object.keys(chartConfigsByPosition));
+
+  if (Object.keys(chartConfig).length === 0) {
+    return (
+      <div className="text-center text-gray-500 mt-10">
+        <p>No chart configuration available for this position.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-black text-white min-h-screen">
       <div className="space-y-6">
         {/* Display PlayerCard at the top */}
-        <PlayerCardNba name={playerName} imageUrl={playerImageUrl} />
+        <PlayerCardNba
+          name={playerName}
+          imageUrl={playerImageUrl}
+          position={position}
+        />
 
         <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-6">
           {Object.entries(chartConfig).map(([key, config]) => (
             <StatsChartServerNba
-              key={key}
+              key={`${slug}-${key}`}
               title={config.label as string}
-              data={stats.map((stat) => ({
-                ...stat,
-                game: stat.game,
-                opponent: stat.opponent || "", // Handle missing opponent field
-                venue: stat.venue || "", // Handle missing venue field
-              }))}
+              data={stats.map((stat) => ({ ...stat, game: stat.game }))} // Use 'week' for NFL
               dataKey={key}
-              config={config as ChartConfig}
+              config={chartConfig}
             />
-          ))}
+          ))}{" "}
         </div>
       </div>
     </div>
